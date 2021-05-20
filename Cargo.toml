@@ -1,0 +1,22 @@
+[package]
+name = "lcat"
+version = "0.1.0"
+authors = ["bootjp / Yoshiaki Ueda <contact@bootjp.me>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.40"
+context = "2.1.0"
+env_logger = "0.8.3"
+filesize = "0.2.0"
+fs = "0.0.5"
+humansize = "1.1.0"
+io = "0.0.2"
+libc = "0.2.94"
+pretty-bytes = "0.2.2"
+result = "1.0.0"
+structopt = "0.3.21"
+unix_mode = "0.1.1"
+use = "0.0.0"
