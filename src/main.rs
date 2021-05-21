@@ -1,5 +1,6 @@
 use anyhow::Result;
 use filesize::PathExt;
+use humansize::{file_size_opts as options, FileSize};
 use std::fs::{self};
 use std::process;
 use std::{os::linux::fs::MetadataExt, path::Path};
@@ -60,31 +61,36 @@ fn main() -> Result<()> {
 fn read_file(path: &Path) -> Result<()> {
     if SIZE_LESS < path.size_on_disk()? {
         //TODO impl less
+        Ok(())
     } else {
         match std::fs::read_to_string(path) {
             Ok(v) => {
                 println!("{}", v);
-                //   writeln!(std::io::stdout(), "{}", v);
+                Ok(())
             }
-            Err(e) => {
-                eprintln!("{}", e)
-            }
+            Err(e) => Err(anyhow::Error::new(e)),
         }
     }
-
-    Ok(())
 }
 
 fn list_dir(path: &Path) -> Result<()> {
+    println!(
+        "{0: <10} | {1: <15} | {2: <10}",
+        "permission", "name", "size"
+    );
+    println!("{0: <10} | {1: <15} | {2: <10}", "----", "----", "---");
+
     for entry in fs::read_dir(path)? {
         let path = entry?.path();
         let meta = fs::metadata(&path).unwrap();
         let stat = meta.st_mode();
         println!(
-            "{}\t{}\t{}",
+            "{0: <10} | {1: <15} | {2: <10}",
             unix_mode::to_string(stat),
             path.display(),
             path.size_on_disk()?
+                .file_size(options::CONVENTIONAL)
+                .unwrap()
         );
     }
     Ok(())
