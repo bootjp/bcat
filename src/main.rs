@@ -1,6 +1,8 @@
 use anyhow::Result;
 use filesize::PathExt;
 use humansize::{file_size_opts as options, FileSize};
+use prettytable::format;
+use prettytable::{Cell, Row, Table};
 use std::fs::{self};
 use std::process;
 use std::{os::linux::fs::MetadataExt, path::Path};
@@ -73,25 +75,27 @@ fn read_file(path: &Path) -> Result<()> {
     }
 }
 
+#[macro_use]
+extern crate prettytable;
 fn list_dir(path: &Path) -> Result<()> {
-    println!(
-        "{0: <10} | {1: <15} | {2: <10}",
-        "permission", "name", "size"
-    );
-    println!("{0: <10} | {1: <15} | {2: <10}", "----", "----", "---");
-
+    let mut table = Table::new();
+    table.set_titles(row!["permission", "name", "size"]);
+    table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
     for entry in fs::read_dir(path)? {
         let path = entry?.path();
         let meta = fs::metadata(&path).unwrap();
         let stat = meta.st_mode();
-        println!(
-            "{0: <10} | {1: <15} | {2: <10}",
-            unix_mode::to_string(stat),
-            path.display(),
-            path.size_on_disk()?
-                .file_size(options::CONVENTIONAL)
-                .unwrap()
-        );
+        table.add_row(Row::new(vec![
+            Cell::new(&unix_mode::to_string(stat)),
+            Cell::new(&path.display().to_string()),
+            Cell::new(
+                &path
+                    .size_on_disk()?
+                    .file_size(options::CONVENTIONAL)
+                    .unwrap(),
+            ),
+        ]));
     }
+    table.printstd();
     Ok(())
 }
