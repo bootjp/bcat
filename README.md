@@ -4,6 +4,15 @@ A command-line tool that allows transparent ls and cat operations regardless of 
 
 Also for practicing Rust.
 
+## install
+
+```sh
+curl -LO https://github.com/bootjp/lcat/releases/latest/download/lcat
+chmod +x lcat
+./lcat .
+sudo cp /usr/local/bin/
+```
+
 ## example
 
 ### for dir
