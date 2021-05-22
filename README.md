@@ -8,8 +8,8 @@ Also for practicing Rust.
 
 ### for dir
 
-[!directory example](.doc/dir.png)
+![directory example](.doc/dir.png)
 
 ### for file
 
-[!file example](.doc/file.png)
+![file example](.doc/file.png)
