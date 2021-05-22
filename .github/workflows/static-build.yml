@@ -1,9 +1,9 @@
 name: Rust-static-build
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+    tags:
+      - "v*.*.*"
+
 env:
   CARGO_TERM_COLOR: always
   BUILD_TARGET: x86_64-unknown-linux-musl
@@ -20,4 +20,16 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ env.BINARY_NAME }}
-          path: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}*
+          path: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
+
+      - name: add execure permission
+        run: chmod +x target/release/lcat
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "target/lcat"
+          prerelease: ${{ contains(github.ref, '-beta') }}
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
