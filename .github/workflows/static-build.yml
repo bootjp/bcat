@@ -22,9 +22,6 @@ jobs:
           name: ${{ env.BINARY_NAME }}
           path: target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
 
-      - name: add execure permission
-        run: chmod +x target/x86_64-unknown-linux-musl/release/${{ env.BINARY_NAME }}
-
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
