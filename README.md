@@ -10,7 +10,7 @@ Also for practicing Rust.
 curl -LO https://github.com/bootjp/lcat/releases/latest/download/lcat
 chmod +x lcat
 ./lcat .
-sudo cp /usr/local/bin/
+sudo cp lcat /usr/local/bin/
 ```
 
 ## example
