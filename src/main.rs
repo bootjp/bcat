@@ -6,7 +6,7 @@ use prettytable::format;
 use prettytable::{Cell, Row, Table};
 use std::process;
 use std::{fs, os::unix::prelude::CommandExt};
-use std::{os::linux::fs::MetadataExt, path::Path};
+use std::{io::Read, os::linux::fs::MetadataExt};
 use structopt::StructOpt;
 use users::{get_group_by_gid, get_user_by_uid};
 
@@ -19,40 +19,33 @@ const SIZE_LESS: u64 = 1024 * 10;
 
 fn main() -> Result<()> {
     let args = Cli::from_args();
-    let path = Path::new(&args.path);
 
-    if !path.exists() {
-        //TODO libcのエラーメッセージを呼び出す方法を調べる
-        eprintln!("No such file or directory.");
-        process::exit(libc::ENOENT);
-    }
+    let mut file = fs::File::open(&args.path)?;
+    let metadata = file.metadata()?;
 
-    return if path.is_file() {
-        if SIZE_LESS < path.size_on_disk()? {
+    return if metadata.is_file() {
+        if SIZE_LESS < metadata.len() {
             //TODO impl less
-            std::process::Command::new("less").arg(path).exec();
+            process::Command::new("less").arg(&args.path).exec();
             return Ok(());
         }
 
-        read_file(path)
+        read_file(&mut file)
     } else {
-        list_dir(path)
+        list_dir(&args.path)
     };
 }
 
-fn read_file(path: &Path) -> Result<()> {
-    match std::fs::read_to_string(path) {
-        Ok(v) => {
-            println!("{}", v);
-            Ok(())
-        }
-        Err(e) => Err(anyhow::Error::new(e)),
-    }
+fn read_file(file: &mut fs::File) -> Result<()> {
+    let mut buf = String::new();
+    file.read_to_string(&mut buf)?;
+    println!("{}", buf);
+    Ok(())
 }
 
 #[macro_use]
 extern crate prettytable;
-fn list_dir(path: &Path) -> Result<()> {
+fn list_dir(path: &str) -> Result<()> {
     let mut table = Table::new();
     table.set_titles(row![
         "permission",
