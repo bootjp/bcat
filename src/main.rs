@@ -3,7 +3,7 @@ use chrono::{Local, TimeZone};
 use filesize::PathExt;
 use humansize::{file_size_opts as options, FileSize};
 use prettytable::format;
-use prettytable::{Cell, Row, Table};
+use prettytable::Table;
 use std::process;
 use std::{fs, os::unix::prelude::CommandExt};
 use std::{io::Read, os::linux::fs::MetadataExt};
@@ -61,24 +61,28 @@ fn list_dir(path: &str) -> Result<()> {
         let path = entry?.path();
         let meta = fs::metadata(&path)?;
         let uid = meta.st_uid();
+        let user = get_user_by_uid(uid)
+            .map(|u| u.name().to_str().unwrap_or_default().to_owned())
+            .unwrap_or_default();
         let gid = meta.st_gid();
+        let group = get_group_by_gid(gid)
+            .map(|g| g.name().to_str().unwrap_or_default().to_owned())
+            .unwrap_or_default();
         let stat = meta.st_mode();
-        let size = &path.size_on_disk()?.file_size(options::CONVENTIONAL);
+        let size = path
+            .size_on_disk()?
+            .file_size(options::CONVENTIONAL)
+            .unwrap_or_default();
         let lmtime = Local.timestamp(meta.st_mtime(), 0);
 
-        let size = match size {
-            Ok(s) => s,
-            Err(_) => continue,
-        };
-
-        table.add_row(Row::new(vec![
-            Cell::new(&unix_mode::to_string(stat)),
-            Cell::new(get_user_by_uid(uid).unwrap().name().to_str().unwrap()),
-            Cell::new(get_group_by_gid(gid).unwrap().name().to_str().unwrap()),
-            Cell::new(&path.display().to_string()),
-            Cell::new(&lmtime.to_string()),
-            Cell::new(size),
-        ]));
+        table.add_row(row![
+            &unix_mode::to_string(stat),
+            &user,
+            &group,
+            &path.display().to_string(),
+            &lmtime.to_string(),
+            &size,
+        ]);
     }
     table.printstd();
     Ok(())

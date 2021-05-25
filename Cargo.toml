@@ -1,6 +1,6 @@
 [package]
+version = "0.1.2"
 name = "bcat"
-version = "0.1.1"
 authors = ["bootjp / Yoshiaki Ueda <contact@bootjp.me>"]
 edition = "2018"
 license = "Apache-2.0"
