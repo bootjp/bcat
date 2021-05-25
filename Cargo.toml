@@ -1,5 +1,5 @@
 [package]
-name = "lcat"
+name = "bcat"
 version = "0.1.0"
 authors = ["bootjp / Yoshiaki Ueda <contact@bootjp.me>"]
 edition = "2018"

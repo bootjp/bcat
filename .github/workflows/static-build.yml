@@ -11,6 +11,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [""]
+      fail-fast: true
     steps:
       - uses: actions/checkout@v2
       - name: Build-musl
