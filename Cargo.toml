@@ -1,8 +1,17 @@
 [package]
-name = "lcat"
 version = "0.1.2"
+name = "bcat"
 authors = ["bootjp / Yoshiaki Ueda <contact@bootjp.me>"]
 edition = "2018"
+license = "Apache-2.0"
+description = "A command-line tool that allows transparent ls and cat operations regardless of whether they are files or directories."
+repository = "https://github.com/bootjp/bcat"
+documentation = "https://github.com/bootjp/bcat/blob/main/README.md"
+readme = "README.md"
+exclude = [
+    ".github/*",
+    ".doc/",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
