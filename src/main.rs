@@ -4,6 +4,7 @@ use filesize::PathExt;
 use humansize::{file_size_opts as options, FileSize};
 use prettytable::format;
 use prettytable::Table;
+use std::path::PathBuf;
 use std::process;
 use std::{fs, os::unix::prelude::CommandExt};
 use std::{io::Read, os::linux::fs::MetadataExt};
@@ -20,7 +21,12 @@ const SIZE_LESS: u64 = 1024 * 10;
 fn main() -> Result<()> {
     let args = Cli::from_args();
 
-    let mut file = fs::File::open(&args.path)?;
+    let path = fs::canonicalize(&args.path).unwrap_or_else(|error| {
+        println!("{}", &error);
+        std::process::exit(1)
+    });
+
+    let mut file = fs::File::open(&path)?;
     let metadata = file.metadata()?;
 
     return if metadata.is_file() {
@@ -32,7 +38,7 @@ fn main() -> Result<()> {
 
         read_file(&mut file)
     } else {
-        list_dir(&args.path)
+        list_dir(&path)
     };
 }
 
@@ -45,7 +51,7 @@ fn read_file(file: &mut fs::File) -> Result<()> {
 
 #[macro_use]
 extern crate prettytable;
-fn list_dir(path: &str) -> Result<()> {
+fn list_dir(path: &PathBuf) -> Result<()> {
     let mut table = Table::new();
     table.set_titles(row![
         "permission",
@@ -56,9 +62,17 @@ fn list_dir(path: &str) -> Result<()> {
         "size"
     ]);
     table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+    let mut paths: Vec<_> = fs::read_dir(path)?.map(|r| r.unwrap()).collect();
 
-    for entry in fs::read_dir(path)? {
-        let path = entry?.path();
+    paths.sort_by_key(|f| {
+        f.file_name()
+            .to_os_string()
+            .to_string_lossy()
+            .to_lowercase()
+    });
+
+    for entry in paths {
+        let path = entry.path();
         let meta = fs::metadata(&path)?;
         let uid = meta.st_uid();
         let user = get_user_by_uid(uid)
@@ -75,11 +89,16 @@ fn list_dir(path: &str) -> Result<()> {
             .unwrap_or_default();
         let lmtime = Local.timestamp(meta.st_mtime(), 0);
 
+        let file_name = match path.file_name() {
+            Some(result) => result.to_string_lossy(),
+            None => continue,
+        };
+
         table.add_row(row![
             &unix_mode::to_string(stat),
             &user,
             &group,
-            &path.display().to_string(),
+            &file_name,
             &lmtime.to_string(),
             &size,
         ]);
