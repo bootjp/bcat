@@ -1,0 +1,20 @@
+bcat 0.1.3
+
+USAGE:
+    bcat [FLAGS] <path>
+
+FLAGS:
+    -h, --help        
+            Prints help information
+
+        --headless    
+            Do not print column names
+
+    -V, --version     
+            Prints version information
+
+
+ARGS:
+    <path>    
+            
+

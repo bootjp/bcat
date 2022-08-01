@@ -1,0 +1,4 @@
+ drwxr-xr-x | <USER_PH> | <GROUP_PH> | a_dir_name | 1970-01-01 04:00:10 +03:00 | <DIR_SIZE_PH> 
+ -rw-r--r-- | <USER_PH> | <GROUP_PH> | a_file.txt | 1970-01-01 03:00:10 +03:00 | 20 
+ drwxr-xr-x | <USER_PH> | <GROUP_PH> | b_dir_name | 1970-01-01 04:00:10 +03:00 | <DIR_SIZE_PH> 
+ -rw-r--r-- | <USER_PH> | <GROUP_PH> | b_file.txt | 1970-01-01 03:00:10 +03:00 | 34 
