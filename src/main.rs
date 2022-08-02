@@ -1,19 +1,25 @@
 use anyhow::Result;
 use chrono::{Local, TimeZone};
-use filesize::PathExt;
-use humansize::{file_size_opts as options, FileSize};
 use prettytable::format;
 use prettytable::Table;
 use std::path::PathBuf;
 use std::process;
 use std::{fs, os::unix::prelude::CommandExt};
-use std::{io::Read, os::linux::fs::MetadataExt};
+use std::io::Read;
+
+#[cfg(target_os = "linux")]
+use std::os::linux::fs::MetadataExt;
+#[cfg(target_os = "macos")]
+use std::os::macos::fs::MetadataExt;
+
 use structopt::StructOpt;
 use users::{get_group_by_gid, get_user_by_uid};
 
 #[derive(StructOpt)]
 struct Cli {
     path: String,
+    #[structopt(long = "headless", long_help ="Do not print column names")]
+    is_headless: bool,
 }
 
 const SIZE_LESS: u64 = 1024 * 10;
@@ -38,7 +44,7 @@ fn main() -> Result<()> {
 
         read_file(&mut file)
     } else {
-        list_dir(&path)
+        list_dir(&path, args.is_headless)
     };
 }
 
@@ -51,16 +57,18 @@ fn read_file(file: &mut fs::File) -> Result<()> {
 
 #[macro_use]
 extern crate prettytable;
-fn list_dir(path: &PathBuf) -> Result<()> {
+fn list_dir(path: &PathBuf, is_headless: bool) -> Result<()> {
     let mut table = Table::new();
-    table.set_titles(row![
-        "permission",
-        "user",
-        "group",
-        "name",
-        "last-modify",
-        "size"
-    ]);
+    if !is_headless {
+        table.set_titles(row![
+            "permission",
+            "user",
+            "group",
+            "name",
+            "last-modify",
+            "size"
+        ]);
+    }
     table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
     let mut paths: Vec<_> = fs::read_dir(path)?.map(|r| r.unwrap()).collect();
 
@@ -83,10 +91,7 @@ fn list_dir(path: &PathBuf) -> Result<()> {
             .map(|g| g.name().to_str().unwrap_or_default().to_owned())
             .unwrap_or_default();
         let stat = meta.st_mode();
-        let size = path
-            .size_on_disk()?
-            .file_size(options::CONVENTIONAL)
-            .unwrap_or_default();
+        let size = meta.st_size();
         let lmtime = Local.timestamp(meta.st_mtime(), 0);
 
         let file_name = match path.file_name() {
