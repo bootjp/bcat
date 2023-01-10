@@ -17,7 +17,7 @@ exclude = [
 
 [dependencies]
 anyhow = "1.0.68"
-chrono = "0.4.19"
+chrono = "0.4.23"
 command = "0.0.0"
 context = "2.1.0"
 env_logger = "0.8.3"
