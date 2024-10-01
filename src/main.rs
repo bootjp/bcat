@@ -2,10 +2,10 @@ use anyhow::Result;
 use chrono::{Local, TimeZone};
 use prettytable::format;
 use prettytable::Table;
+use std::io::Read;
 use std::path::PathBuf;
 use std::process;
 use std::{fs, os::unix::prelude::CommandExt};
-use std::io::Read;
 
 #[cfg(target_os = "linux")]
 use std::os::linux::fs::MetadataExt;
@@ -18,7 +18,7 @@ use users::{get_group_by_gid, get_user_by_uid};
 #[derive(StructOpt)]
 struct Cli {
     path: String,
-    #[structopt(long = "headless", long_help ="Do not print column names")]
+    #[structopt(long = "headless", long_help = "Do not print column names")]
     is_headless: bool,
 }
 
@@ -92,7 +92,10 @@ fn list_dir(path: &PathBuf, is_headless: bool) -> Result<()> {
             .unwrap_or_default();
         let stat = meta.st_mode();
         let size = meta.st_size();
-        let lmtime = Local.timestamp(meta.st_mtime(), 0);
+        let lmtime = match Local.timestamp_opt(meta.st_mtime(), 0).single() {
+            Some(dt) => dt,
+            None => Local::now(),
+        };
 
         let file_name = match path.file_name() {
             Some(result) => result.to_string_lossy(),
